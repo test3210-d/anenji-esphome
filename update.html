@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BK7231M OTA Update</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .device-info {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .device-info strong {
+            color: #333;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e0e0e0;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+
+        .status.info {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #90caf9;
+        }
+
+        .status.success {
+            background: #e8f5e9;
+            color: #388e3c;
+            border: 1px solid #81c784;
+        }
+
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef5350;
+        }
+
+        .status.warning {
+            background: #fff3e0;
+            color: #e65100;
+            border: 1px solid #ffb74d;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .progress-text {
+            margin-top: 8px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .url-presets {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .url-presets label {
+            margin-bottom: 10px;
+        }
+
+        .preset-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .preset-btn {
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .preset-btn:hover {
+            background: #f0f0f0;
+            border-color: #667eea;
+        }
+
+        .preset-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+
+        .stat-item {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .stat-label {
+            color: #999;
+            margin-top: 3px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #1976d2;
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #1565c0;
+            line-height: 1.5;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .log-container {
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+            color: #333;
+            display: none;
+        }
+
+        .log-entry {
+            padding: 3px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-success { color: #388e3c; }
+        .log-error { color: #c62828; }
+        .log-warning { color: #e65100; }
+        .log-info { color: #1976d2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">📡</div>
+            <h1>BK7231M OTA Update</h1>
+            <p>Оновлення прошивки через GitHub</p>
+        </div>
+
+        <div class="device-info">
+            <div><strong>IP адреса:</strong> <span id="device-ip-display">-</span></div>
+            <div style="margin-top: 5px;"><strong>URL прошивки:</strong> <span id="fw-url-display" style="word-break: break-all; font-size: 11px;">-</span></div>
+        </div>
+
+        <form id="updateForm">
+            <div class="form-group">
+                <label for="deviceIp">🔧 IP адреса пристрою</label>
+                <input type="text" id="deviceIp" placeholder="192.168.1.100" value="192.168.1.100">
+            </div>
+
+            <div class="form-group">
+                <label for="firmwareUrl">📦 URL прошивки</label>
+                <input type="text" id="firmwareUrl" placeholder="https://..." value="https://github.com/test3210-d/anenji-esphome/raw/refs/heads/main/firmware.bin">
+            </div>
+
+            <div class="url-presets">
+                <label>⚡ Готові посилання:</label>
+                <div class="preset-buttons">
+                    <button type="button" class="preset-btn active" onclick="setPreset('https://github.com/test3210-d/anenji-esphome/raw/refs/heads/main/firmware.bin')">
+                        📌 ESPHome (anenji)
+                    </button>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn-primary" id="checkBtn" onclick="checkDevice()">
+                    ✓ Перевірити
+                </button>
+                <button type="submit" class="btn-primary" id="updateBtn" onclick="startUpdate(event)">
+                    🚀 Запустити OTA
+                </button>
+            </div>
+        </form>
+
+        <div class="status info" id="status">
+            <span class="spinner"></span>
+            <span id="statusText">Завантаження...</span>
+        </div>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">0%</div>
+        </div>
+
+        <div class="log-container" id="logContainer">
+            <div id="logContent"></div>
+        </div>
+
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stat-item">
+                <div class="stat-value" id="statElapsed">0s</div>
+                <div class="stat-label">Час</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="statStatus">-</div>
+                <div class="stat-label">Статус</div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <strong>💡 Поради:</strong><br>
+            • НЕ вимикайте пристрій під час оновлення<br>
+            • НЕ відключайте Wi-Fi<br>
+            • Оновлення займе 2-5 хвилин<br>
+            • Пристрій перезавантажиться автоматично
+        </div>
+
+        <div class="footer">
+            <p>BK7231M OTA Update Tool v1.0</p>
+            <p><a href="https://github.com/test3210-d/anenji-esphome" style="color: #667eea; text-decoration: none;">GitHub Repository</a></p>
+        </div>
+    </div>
+
+    <script>
+        const DEFAULT_URL = "https://github.com/test3210-d/anenji-esphome/raw/refs/heads/main/firmware.bin";
+        let isUpdating = false;
+        let startTime = null;
+        let updateTimer = null;
+
+        // Завантажити збережені значення
+        window.addEventListener('load', () => {
+            const savedIp = localStorage.getItem('deviceIp');
+            const savedUrl = localStorage.getItem('firmwareUrl');
+            
+            if (savedIp) document.getElementById('deviceIp').value = savedIp;
+            if (savedUrl) document.getElementById('firmwareUrl').value = savedUrl;
+            
+            updateDeviceInfo();
+        });
+
+        function updateDeviceInfo() {
+            const ip = document.getElementById('deviceIp').value;
+            const url = document.getElementById('firmwareUrl').value;
+            
+            document.getElementById('device-ip-display').textContent = ip || '192.168.1.100';
+            document.getElementById('fw-url-display').textContent = url || 'не вказано';
+            
+            localStorage.setItem('deviceIp', ip);
+            localStorage.setItem('firmwareUrl', url);
+        }
+
+        function setPreset(url) {
+            document.getElementById('firmwareUrl').value = url;
+            updateDeviceInfo();
+            
+            // Підсвітити активну кнопку
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        document.getElementById('deviceIp').addEventListener('change', updateDeviceInfo);
+        document.getElementById('firmwareUrl').addEventListener('change', updateDeviceInfo);
+
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            const statusText = document.getElementById('statusText');
+            
+            status.className = `status ${type}`;
+            statusText.textContent = message;
+            status.style.display = 'block';
+        }
+
+        function hideStatus() {
+            document.getElementById('status').style.display = 'none';
+        }
+
+        function addLog(message, type = 'info') {
+            const logContent = document.getElementById('logContent');
+            const logContainer = document.getElementById('logContainer');
+            
+            logContainer.style.display = 'block';
+            
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            
+            logContent.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('logContent').innerHTML = '';
+        }
+
+        async function checkDevice() {
+            const ip = document.getElementById('deviceIp').value;
+            
+            if (!ip) {
+                showStatus('❌ Вкажіть IP адресу', 'error');
+                return;
+            }
+
+            showStatus('⏳ Перевіряю доступність...', 'info');
+            clearLog();
+            addLog('Перевірка доступності пристрою...', 'info');
+
+            try {
+                const response = await fetch(`http://${ip}/`, { 
+                    method: 'GET',
+                    timeout: 5000,
+                    mode: 'no-cors'
+                });
+                
+                showStatus('✓ Пристрій доступний!', 'success');
+                addLog(`Пристрій знайдено на ${ip}`, 'success');
+                document.getElementById('updateBtn').disabled = false;
+            } catch (error) {
+                showStatus('❌ Пристрій недоступний', 'error');
+                addLog(`Помилка: не можу підключитися до ${ip}`, 'error');
+                addLog('Перевірте IP адресу та Wi-Fi з\'єднання', 'warning');
+                document.getElementById('updateBtn').disabled = true;
+            }
+        }
+
+        async function startUpdate(e) {
+            e.preventDefault();
+            
+            const ip = document.getElementById('deviceIp').value;
+            const url = document.getElementById('firmwareUrl').value;
+
+            if (!ip) {
+                showStatus('❌ Вкажіть IP адресу', 'error');
+                return;
+            }
+
+            if (!url) {
+                showStatus('❌ Вкажіть URL прошивки', 'error');
+                return;
+            }
+
+            if (isUpdating) return;
+
+            isUpdating = true;
+            startTime = Date.now();
+            clearLog();
+
+            document.getElementById('checkBtn').disabled = true;
+            document.getElementById('updateBtn').disabled = true;
+            document.getElementById('deviceIp').disabled = true;
+            document.getElementById('firmwareUrl').disabled = true;
+
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('stats').style.display = 'grid';
+
+            showStatus('⏳ Запускаю OTA оновлення...', 'info');
+            addLog('Запуск OTA оновлення', 'info');
+            addLog(`IP: ${ip}`, 'info');
+            addLog(`URL: ${url}`, 'info');
+
+            try {
+                // Відправити команду оновлення
+                addLog('Відправляю команду на пристрій...', 'info');
+                
+                const payload = {
+                    string: {
+                        "35": "1",
+                        "ota_url": url
+                    }
+                };
+
+                const response = await fetch(`http://${ip}/cjson/system_para.json`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload),
+                    mode: 'no-cors'
+                });
+
+                addLog('Команда відправлена успішно!', 'success');
+                showStatus('✓ Оновлення розпочалось!', 'success');
+                addLog('Пристрій завантажує прошивку...', 'info');
+
+                // Почати моніторинг
+                startMonitoring(ip);
+
+            } catch (error) {
+                addLog(`Помилка: ${error.message}`, 'error');
+                showStatus('❌ Помилка при запуску оновлення', 'error');
+                resetUI();
+            }
+        }
+
+        function startMonitoring(ip) {
+            const maxTime = 5 * 60 * 1000; // 5 хвилин
+            let isOnline = true;
+
+            updateTimer = setInterval(async () => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                
+                document.getElementById('statElapsed').textContent = `${elapsed}s`;
+                document.getElementById('progressFill').style.width = Math.min((elapsed / 300) * 100, 90) + '%';
+                document.getElementById('progressText').textContent = Math.min(Math.floor((elapsed / 300) * 100), 90) + '%';
+
+                // Перевірити доступність
+                try {
+                    const response = await fetch(`http://${ip}/`, { 
+                        method: 'GET',
+                        timeout: 2000,
+                        mode: 'no-cors'
+                    });
+
+                    if (!isOnline) {
+                        isOnline = true;
+                        addLog('Пристрій повернувся онлайн', 'success');
+                    }
+
+                    if (elapsed % 15 === 0) {
+                        document.getElementById('statStatus').textContent = '✓ Онлайн';
+                    }
+
+                } catch (error) {
+                    if (isOnline && elapsed > 5) {
+                        addLog('Пристрій перезавантажується...', 'warning');
+                        isOnline = false;
+                    }
+                    document.getElementById('statStatus').textContent = '🔄 Зміна';
+                }
+
+                if (elapsed > maxTime) {
+                    clearInterval(updateTimer);
+                    finishUpdate();
+                }
+
+            }, 2000);
+
+            // Залишити сторінку відкритою
+            setTimeout(() => {
+                clearInterval(updateTimer);
+                finishUpdate();
+            }, maxTime + 5000);
+        }
+
+        function finishUpdate() {
+            addLog('Моніторинг завершено', 'info');
+            addLog('Перевірте, чи пристрій повернувся онлайн', 'warning');
+            
+            document.getElementById('progressFill').style.width = '100%';
+            document.getElementById('progressText').textContent = '100%';
+            document.getElementById('statStatus').textContent = '✓ Готово';
+            
+            showStatus('✓ Оновлення завершено! Пристрій має перезавантажитися', 'success');
+            resetUI();
+        }
+
+        function resetUI() {
+            isUpdating = false;
+            clearInterval(updateTimer);
+            
+            setTimeout(() => {
+                document.getElementById('checkBtn').disabled = false;
+                document.getElementById('updateBtn').disabled = false;
+                document.getElementById('deviceIp').disabled = false;
+                document.getElementById('firmwareUrl').disabled = false;
+            }, 1000);
+        }
+
+        // Запобігти перезавантажуванню сторінки випадково
+        window.addEventListener('beforeunload', (e) => {
+            if (isUpdating) {
+                e.preventDefault();
+                e.returnValue = 'Оновлення в процесі! Ви впевнені?';
+                return 'Оновлення в процесі! Ви впевнені?';
+            }
+        });
+    </script>
+</body>
+</html>
